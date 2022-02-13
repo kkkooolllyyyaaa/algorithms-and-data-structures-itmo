@@ -1,46 +1,78 @@
 #include <iostream>
 #include <string>
-#include <map>
-#include <algorithm>
-#include <utility>
 #include <vector>
 
 #define io_boost ios_base::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr)
 #define endl "\n"
 
 using namespace std;
+vector<string> ans;
+
+int mi(int a, int b) {
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
+void annihilate(int *a, int *b, const string &str) {
+    int temp = mi(*a, *b);
+    for (int i = 0; i < temp; ++i) {
+        ans.push_back(str + '-');
+    }
+    *a -= temp;
+    *b -= temp;
+}
+
+void move_diagonal(int *departure, int *destination, const string &path1, const string &path2) {
+    for (int i = 0; i < *departure; ++i) {
+        ans.push_back(path2 + '+');
+        ans.push_back(path1 + '-');
+    }
+    *destination += *departure;
+    *departure = 0;
+}
 
 int main() {
     io_boost;
     int a, b, c, d, e, f, g, h;
     cin >> a >> b >> c >> d >> e >> f >> g >> h;
-    int A = a + c + f + h, B = b + d + e + g, i;
-    if (A != B) {
+    if ((a + b + c + d + e + f + g + h) % 2 != 0) {
+        cout << "IMPOSSIBLE" << endl;
+        return 0;
+    }
+    annihilate(&a, &d, "AD");
+    annihilate(&b, &c, "BC");
+    annihilate(&e, &h, "EH");
+    annihilate(&f, &g, "FG");
+
+    annihilate(&a, &e, "AE");
+    annihilate(&d, &h, "DH");
+    annihilate(&b, &f, "BF");
+    annihilate(&c, &g, "CG");
+
+    annihilate(&a, &b, "AB");
+    annihilate(&c, &d, "CD");
+    annihilate(&e, &f, "EF");
+    annihilate(&g, &h, "GH");
+
+    move_diagonal(&g, &b, "GC", "CB");
+    move_diagonal(&c, &f, "CB", "BF");
+
+    move_diagonal(&h, &a, "HE", "EA");
+    move_diagonal(&d, &e, "DA", "AE");
+
+    annihilate(&a, &b, "AB");
+    annihilate(&e, &f, "EF");
+    annihilate(&b, &f, "BF");
+    annihilate(&a, &e, "AE");
+    if ((a + b + c + d + e + f + g + h) != 0) {
         cout << "IMPOSSIBLE" << endl;
         return 0;
     }
 
-    for (i = 0; i < c; ++i) {
-        cout << "AB+" << endl << "CB-" << endl;
-    }
-    for (i = 0; i < f; ++i) {
-        cout << "AB+" << endl << "FB-" << endl;
-    }
-    for (i = 0; i < h; ++i) {
-        cout << "AE+" << endl << "HE-" << endl;
-    }
-
-    for (i = 0; i < d; ++i) {
-        cout << "BA+" << endl << "DA-" << endl;
-    }
-    for (i = 0; i < e; ++i) {
-        cout << "BA+" << endl << "EA-" << endl;
-    }
-    for (i = 0; i < g; ++i) {
-        cout << "BC+" << endl << "GC-" << endl;
-    }
-    for (i = 0; i < A; ++i) {
-        cout << "AB-" << endl;
+    for (auto &an: ans) {
+        cout << an << endl;
     }
     return 0;
 }
