@@ -2,16 +2,10 @@
 #include <vector>
 #include <queue>
 
-#define io_boost ios_base::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr)
-#define endl "\n"
-
 using namespace std;
 
-// Номера вхождений для каждой машины в порядке поступления
 vector<queue<int>> cars;
 
-// Бинарная мин куча
-// В задаче, top() => элемент, который выгоднее убрать с пола (т.е. он дальше всех или вовсе больше не используется)
 class BiHeap {
 private:
     vector<int> heap;
@@ -41,21 +35,18 @@ public:
     int index_by_id(int id);
 };
 
-
 bool cmp(int car1, int car2);
 
 int main() {
-    io_boost;
     int n, k, p;
     cin >> n >> k >> p;
 
-    int answer = 0, floor_cnt = 0;
-    vector<bool> floor(n, false);
     cars.resize(n);
-    BiHeap heap(n);
     vector<int> queries(p);
 
-    // Заполняем вхождения каждой из машин
+    /**
+     * Заполним очереди - индексы вхождения для каждой из машин
+     */
     for (int i = 0; i < p; ++i) {
         int car;
         cin >> car;
@@ -63,23 +54,34 @@ int main() {
         cars[queries[i]].push(i);
     }
 
+    vector<bool> floor(n, false);
+    BiHeap heap(n);
+    int answer = 0, floor_cnt = 0;
+
     for (int i = 0; i < p; ++i) {
         const int car = queries[i];
-        // Если машина уже на полу, то просто обновим её позицию в куче (т.к. состояние очереди поменялось)
+        /**
+         * Если машина уже на полу, то просто обновим её позицию в куче
+         * (т.к. состояние очереди поменялось)
+         */
         if (floor[car]) {
             cars[car].pop();
             int to_sift = heap.index_by_id(car);
             heap.sift_up(to_sift);
             continue;
         }
-        // Добавим элемент в кучу
+        /**
+         * Добавим элемент в кучу
+         */
         if (floor_cnt < k) {
             cars[car].pop();
             heap.insert(car);
             floor_cnt++;
             floor[car] = true;
         }
-        // Уберем наиболее выгодную машину (top кучи) и добавим машину с запроса
+            /**
+             * Уберем наиболее выгодную машину (top кучи) и добавим машину с запроса
+             */
         else {
             const int to_pop = heap.top();
             floor[to_pop] = false;
@@ -166,14 +168,11 @@ int BiHeap::index_by_id(int id) {
     return ids[id];
 }
 
-// is car1 < car2 ?
 bool cmp(int car1, int car2) {
-    if (!cars[car1].empty() && !cars[car2].empty()) {
+    if (!cars[car1].empty() && !cars[car2].empty())
         return cars[car1].front() > cars[car2].front();
-    }
+
     if (cars[car1].empty())
         return true;
-    else if (cars[car2].empty())
-        return false;
     return false;
 }

@@ -1,19 +1,14 @@
 #include <iostream>
 #include <string>
-#include <map>
 #include <algorithm>
-#include <utility>
 #include <vector>
-
-#define io_boost ios_base::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr)
-#define endl "\n"
 
 using namespace std;
 
 typedef struct weight_and_char {
-    int weight;
+    size_t weight;
     char c;
-    int cnt;
+    size_t cnt;
 } element;
 
 bool comp(element e1, element e2) {
@@ -21,47 +16,67 @@ bool comp(element e1, element e2) {
 }
 
 int main() {
-    io_boost;
     string str;
     cin >> str;
-    vector<element> weights;
-    vector<char> ans(str.length());
-    vector<int> char_cnt(26, 0);
 
-    for (char i: str) {
+    /**
+     * Посчитаем сколько каждой из букв
+     */
+    const int alphabet_sz = 26;
+    vector<size_t> char_cnt(alphabet_sz, 0);
+    for (char i: str)
         char_cnt[i - 'a']++;
-    }
 
-    for (int i = 0; i < 26; ++i) {
-        int weight;
+    /**
+     * Отсортируем все буквы по весам, независимо от количества
+     */
+    vector<element> weights(alphabet_sz);
+    for (int i = 0; i < alphabet_sz; ++i) {
+        size_t weight;
         cin >> weight;
-        weights.push_back({.weight = weight, .c = char('a' + i), .cnt = char_cnt[i]});
+        weights[i] = (element)
+                {
+                        .weight = weight,
+                        .c = char('a' + i),
+                        .cnt = char_cnt[i]
+                };
     }
     sort(weights.begin(), weights.end(), comp);
 
-    int left = 0, right = ans.size() - 1;
-    for (int i = 0; i < 26; ++i) {
-        if (weights[i].cnt > 1) {
-            ans[left] = weights[i].c;
-            ans[right] = weights[i].c;
-            --right;
-            ++left;
-        }
+    /**
+     * Если букв хотя бы 2, то припишем их слева и справа
+     * Так мы получим максимальную пользу от конкретной буквы с весом
+     * Если букв меньше 2, то они нам не важны, засунем их позже в центр
+     */
+    vector<char> ans(str.length());
+    size_t left = 0, right = ans.size() - 1;
+    for (size_t i = 0; i < alphabet_sz; ++i) {
+        if (weights[i].cnt < 2)
+            continue;
+
+        ans[left] = weights[i].c;
+        ans[right] = weights[i].c;
+        --right;
+        ++left;
     }
-    for (int i = 0; i < 26; ++i) {
+
+    /**
+     * Припишем оставшиеся незначимые буквы
+     */
+    for (size_t i = 0; i < alphabet_sz; ++i) {
         if (weights[i].cnt == 1) {
             ans[left] = weights[i].c;
             ++left;
         } else if (weights[i].cnt > 2) {
-            for (int j = 0; j < weights[i].cnt - 2; ++j) {
+            for (size_t j = 0; j < weights[i].cnt - 2; ++j) {
                 ans[left] = weights[i].c;
                 ++left;
             }
         }
     }
-    for (char an: ans) {
+
+    for (char an: ans)
         cout << an;
-    }
-    cout << endl;
+
     return 0;
 }
